@@ -41,8 +41,11 @@ public class UserController {
     @PutMapping
     public User updateUser(@RequestBody User user) {
         validateUser(user);
+        if (!users.containsKey(user.getId())) {
+            throw new ValidationException("Пользователь не найден.");
+        }
         users.put(user.getId(), user);
-        log.info("Данные пользователя обновлены.");
+        log.info("Данные пользователя с ID " + user.getId() + " обновлены.");
         return user;
     }
 
@@ -57,7 +60,7 @@ public class UserController {
         if ((user.getName() == null) || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-        if (user.getBirthdate().isAfter(LocalDate.now())) {
+        if (user.getBirthdate() != null && user.getBirthdate().isAfter(LocalDate.now())) {
             throw new ValidationException("Дата рождения не может быть в будущем.");
         }
     }
