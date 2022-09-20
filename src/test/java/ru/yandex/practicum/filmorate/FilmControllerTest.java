@@ -8,7 +8,8 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static ru.yandex.practicum.filmorate.controller.FilmController.validateFilm;
+import static ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage.validateFilm;
+
 
 public class FilmControllerTest {
 
