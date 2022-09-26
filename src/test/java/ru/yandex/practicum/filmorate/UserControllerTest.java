@@ -52,3 +52,4 @@ public class UserControllerTest {
         assertEquals("Дата рождения не может быть в будущем.", e.getMessage());
     }
 }
+

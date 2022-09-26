@@ -13,7 +13,7 @@ public class User {
     private String email;
     private String login;
     private String name;
-    private LocalDate birthdate;
+    private LocalDate birthday;
     private Set<Integer> friends = new HashSet<>();
 
     //конструктор для тестов
@@ -22,6 +22,7 @@ public class User {
         this.email = email;
         this.login = login;
         this.name = name;
-        this.birthdate = birthdate;
+        this.birthday = birthdate;
     }
 }
+

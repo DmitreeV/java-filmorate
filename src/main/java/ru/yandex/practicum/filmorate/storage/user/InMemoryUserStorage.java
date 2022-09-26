@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -40,7 +41,7 @@ public class InMemoryUserStorage implements UserStorage {
     public User updateUser(User user) {
         validateUser(user);
         if (!users.containsKey(user.getId())) {
-            throw new ValidationException("Пользователь не найден.");
+            throw new NotFoundException("Пользователь не найден.");
         }
         users.put(user.getId(), user);
         log.info("Данные пользователя с ID " + user.getId() + " обновлены.");
@@ -50,8 +51,10 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public User getUserById(int id) {
         if (users.containsKey(id)) {
+            return users.get(id);
+        } else {
+            throw new NotFoundException("Пользователь не найден!");
         }
-        return users.get(id);
     }
 
     public static void validateUser(User user){
@@ -65,7 +68,7 @@ public class InMemoryUserStorage implements UserStorage {
         if ((user.getName() == null) || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-        if (user.getBirthdate() != null && user.getBirthdate().isAfter(LocalDate.now())) {
+        if (user.getBirthday() == null || user.getBirthday().isAfter(LocalDate.now())) {
             throw new ValidationException("Дата рождения не может быть в будущем.");
         }
     }

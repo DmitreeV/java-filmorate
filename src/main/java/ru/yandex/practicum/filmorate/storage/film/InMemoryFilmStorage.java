@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -16,7 +17,7 @@ import java.util.Map;
 public class InMemoryFilmStorage implements FilmStorage {
     private final Map<Integer, Film> films = new HashMap<>();
     private int id = 1;
-    private final static LocalDate OLD_DATE = LocalDate.of(1888, 10, 12);
+    private final static LocalDate OLD_DATE = LocalDate.of(1895, 12, 28);
 
     private int generateId() {
         return id++;
@@ -40,7 +41,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Film updateFilm(Film film) {
         validateFilm(film);
         if (!films.containsKey(film.getId())) {
-            throw new ValidationException("Фильм не найден.");
+            throw new NotFoundException("Фильм не найден.");
         }
         films.put(film.getId(), film);
         log.info("Фильм с номером " + film.getId() + " обновлен.");
@@ -50,8 +51,10 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Film getFilmById(int id) {
         if (films.containsKey(id)) {
+            return films.get(id);
+        } else {
+            throw new NotFoundException("Фильм не найден!");
         }
-        return films.get(id);
     }
 
     public static void validateFilm(Film film) {

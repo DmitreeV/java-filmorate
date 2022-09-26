@@ -15,9 +15,15 @@ import java.util.stream.Collectors;
 public class FilmService {
 
     private final FilmStorage filmStorage;
+    private final UserService userService;
 
-    public FilmService(FilmStorage filmStorage) {
+    public FilmService(FilmStorage filmStorage, UserService userService) {
         this.filmStorage = filmStorage;
+        this.userService = userService;
+    }
+
+    public UserService getUserService() {
+        return userService;
     }
 
     public List<Film> getAllFilms() {
