@@ -25,4 +25,14 @@ public class Film {
         this.releaseDate = releaseDate;
         this.duration = duration;
     }
+
+    public void addLike(Integer id) {
+        likes.add(id);
+        likesCounter ++;
+    }
+
+    public void deleteLike(Integer id) {
+        likes.remove(id);
+        likesCounter --;
+    }
 }

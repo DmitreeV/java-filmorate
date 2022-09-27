@@ -42,12 +42,12 @@ public class FilmController {
 
     @PutMapping("/{filmId}/like/{userId}")
     public Film addLike(@PathVariable("filmId") int filmId, @PathVariable("userId") int userId) {
-        return filmService.addLike(filmService.getFilmById(filmId), filmService.getUserService().getUserById(userId));
+        return filmService.addLike(filmId, userId);
     }
 
     @DeleteMapping("/{filmId}/like/{userId}")
     public Film deleteLike(@PathVariable("filmId") int filmId, @PathVariable("userId") int userId) {
-        return filmService.deleteLike(filmService.getFilmById(filmId), filmService.getUserService().getUserById(userId));
+        return filmService.deleteLike(filmId, userId);
     }
 
     @GetMapping("/popular")
