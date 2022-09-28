@@ -10,8 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static ru.yandex.practicum.filmorate.service.UserService.validateUser;
-
 @Component
 @Slf4j
 public class InMemoryUserStorage implements UserStorage {
@@ -30,7 +28,6 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User saveUser(User user) {
-        validateUser(user);
         user.setId(generateId());
         users.put(user.getId(), user);
         log.info("Пользователь сохранен.");
@@ -39,7 +36,6 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User updateUser(User user) {
-        validateUser(user);
         if (!users.containsKey(user.getId())) {
             throw new NotFoundException("Пользователь не найден.");
         }

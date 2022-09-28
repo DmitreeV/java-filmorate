@@ -10,8 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static ru.yandex.practicum.filmorate.service.FilmService.validateFilm;
-
 @Component
 @Slf4j
 public class InMemoryFilmStorage implements FilmStorage {
@@ -28,7 +26,6 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film saveFilm(Film film) {
-        validateFilm(film);
         film.setId(generateId());
         films.put(film.getId(), film);
         log.info("Фильм сохранен.");
@@ -37,7 +34,6 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film updateFilm(Film film) {
-        validateFilm(film);
         if (!films.containsKey(film.getId())) {
             throw new NotFoundException("Фильм не найден.");
         }

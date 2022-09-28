@@ -25,10 +25,12 @@ public class UserService {
     }
 
     public User saveUser(User user) {
+        validateUser(user);
         return userStorage.saveUser(user);
     }
 
     public User updateUser(User user) {
+        validateUser(user);
         return userStorage.updateUser(user);
     }
 
@@ -39,22 +41,18 @@ public class UserService {
     public User addFriend(int userId, int friendId) {
         User user = userStorage.getUserById(userId);
         User friend = userStorage.getUserById(friendId);
-        if (user != null && friend != null) {
-            user.addFriend(friendId);
-            friend.addFriend(userId);
-            log.info("Пользователь " + user.getName() + " добавлен в список друзей " + friend.getName());
-        }
+        user.addFriend(friendId);
+        friend.addFriend(userId);
+        log.info("Пользователь " + user.getName() + " добавлен в список друзей " + friend.getName());
         return user;
     }
 
     public User deleteFriend(int userId, int friendId) {
         User user = userStorage.getUserById(userId);
         User friend = userStorage.getUserById(friendId);
-        if (user != null && friend != null) {
-            user.deleteFriend(friendId);
-            friend.deleteFriend(userId);
-            log.info("Пользователь " + user.getName() + " удален из списка друзей " + friend.getName());
-        }
+        user.deleteFriend(friendId);
+        friend.deleteFriend(userId);
+        log.info("Пользователь " + user.getName() + " удален из списка друзей " + friend.getName());
         return user;
     }
 
@@ -82,12 +80,12 @@ public class UserService {
         return mutualFriends;
     }
 
-    public static void validateUser(User user){
+    public static void validateUser(User user) {
 
-        if(user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
+        if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
             throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ @.");
         }
-        if(user.getLogin().isBlank() || user.getLogin().contains(" ")) {
+        if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
             throw new ValidationException("Логин не может быть пустым и содержать пробелы.");
         }
         if ((user.getName() == null) || user.getName().isBlank()) {

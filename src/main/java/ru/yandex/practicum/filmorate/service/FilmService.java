@@ -31,10 +31,12 @@ public class FilmService {
     }
 
     public Film saveFilm(Film film) {
+        validateFilm(film);
         return filmStorage.saveFilm(film);
     }
 
     public Film updateFilm(Film film) {
+        validateFilm(film);
         return filmStorage.updateFilm(film);
     }
 
@@ -44,25 +46,17 @@ public class FilmService {
 
     public Film addLike(int filmId, int userId) {
         Film film = filmStorage.getFilmById(filmId);
-        if (film != null) {
-            User user = userStorage.getUserById(userId);
-            if(user != null){
-                film.addLike(userId);
-                log.info("Пользователь " + user.getName() + " поставил лайк фильму " + film.getName());
-            }
-        }
+        User user = userStorage.getUserById(userId);
+        film.addLike(userId);
+        log.info("Пользователь " + user.getName() + " поставил лайк фильму " + film.getName());
         return film;
     }
 
     public Film deleteLike(int filmId, int userId) {
         Film film = filmStorage.getFilmById(filmId);
-        if (film != null) {
-            User user = userStorage.getUserById(userId);
-            if(user != null){
-                film.deleteLike(userId);
-                log.info("Пользователь " + user.getName() + " убрал лайк у фильма " + film.getName());
-            }
-        }
+        User user = userStorage.getUserById(userId);
+        film.deleteLike(userId);
+        log.info("Пользователь " + user.getName() + " убрал лайк у фильма " + film.getName());
         return film;
     }
 
@@ -87,7 +81,7 @@ public class FilmService {
         if (film.getDescription() != null && film.getDescription().length() > 200) {
             throw new ValidationException("Максимальная длина описания — 200 символов.");
         }
-        if (film.getReleaseDate() != null && film.getReleaseDate().isBefore(OLD_DATE)) {
+        if (film.getReleaseDate() == null || film.getReleaseDate().isBefore(OLD_DATE)) {
             throw new ValidationException("Дата релиза должна быть не раньше 28 декабря 1895 года!");
         }
         if (film.getDuration() <= 0) {
