@@ -8,7 +8,7 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static ru.yandex.practicum.filmorate.controller.UserController.validateUser;
+import static ru.yandex.practicum.filmorate.service.UserService.validateUser;
 
 public class UserControllerTest {
 
@@ -52,3 +52,4 @@ public class UserControllerTest {
         assertEquals("Дата рождения не может быть в будущем.", e.getMessage());
     }
 }
+
