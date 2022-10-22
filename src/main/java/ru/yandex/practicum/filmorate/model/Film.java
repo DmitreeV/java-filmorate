@@ -4,6 +4,7 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -14,8 +15,15 @@ public class Film {
     private String description;
     private LocalDate releaseDate;
     private int duration;
+
+    private Mpa mpa;
+
+    private List<Genre> genres;
+
+    private int rate;
     private Set<Integer> likes = new HashSet<>();
     private int likesCounter;
+
 
     //конструктор для тестов
     public Film(int id, String name, String description, LocalDate releaseDate, int duration) {
@@ -24,6 +32,14 @@ public class Film {
         this.description = description;
         this.releaseDate = releaseDate;
         this.duration = duration;
+    }
+    //конструктор для тестов
+    public Film( String name, String description, LocalDate releaseDate, int duration, Mpa mpa) {
+        this.name = name;
+        this.description = description;
+        this.releaseDate = releaseDate;
+        this.duration = duration;
+        this.mpa = mpa;
     }
 
     public void addLike(Integer id) {

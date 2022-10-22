@@ -25,6 +25,12 @@ public class User {
         this.birthday = birthdate;
     }
 
+    public User(String email, String login, LocalDate birthday) {
+        this.email = email;
+        this.login = login;
+        this.birthday = birthday;
+    }
+
     public void addFriend(Integer id) {
         friends.add(id);
     }
