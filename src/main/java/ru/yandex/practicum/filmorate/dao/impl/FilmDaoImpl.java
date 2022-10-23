@@ -1,10 +1,12 @@
 package ru.yandex.practicum.filmorate.dao.impl;
 
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.FilmDao;
 import ru.yandex.practicum.filmorate.dao.MpaDao;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.sql.Date;
@@ -27,8 +29,8 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public List<Film> getAllFilms() {
-        String qs = "SELECT film_id, name, description, release_date, duration, MPA_id, rate FROM films";
-        return jdbcTemplate.query(qs, this::mapRowToFilm);
+        String qs = "SELECT film_id, name, description, release_date, duration, Mpa_rating_id, rate FROM films";
+        return jdbcTemplate.query(qs, this::makeFilm);
     }
 
     @Override
@@ -38,37 +40,53 @@ public class FilmDaoImpl implements FilmDao {
         values.put("description", film.getDescription());
         values.put("release_date", Date.valueOf(film.getReleaseDate()));
         values.put("duration", film.getDuration());
-        values.put("MPA_id", film.getMpa().getMpaId());
-        values.put("rate", 0);
+        values.put("Mpa_rating_id", film.getMpa().getId());
+        values.put("rate", film.getRate());
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("films")
                 .usingGeneratedKeyColumns("film_id");
-        return getFilmById(simpleJdbcInsert.executeAndReturnKey(values).intValue());
+        film.setId(simpleJdbcInsert.executeAndReturnKey(values).intValue());
+        return film;
     }
 
     @Override
     public Film updateFilm(Film film) {
         String qs = "UPDATE films SET name = ?, description = ?, release_date = ?, " +
-                "duration = ?, MPA_id = ? WHERE film_id = ?";
-        jdbcTemplate.update(qs, film.getName(), film.getDescription(), film.getReleaseDate(),
-                film.getDuration(), film.getMpa().getMpaId(), film.getId());
-
+                "duration = ?, Mpa_rating_id = ? WHERE film_id = ?";
+        int result = jdbcTemplate.update(qs, film.getName(), film.getDescription(), film.getReleaseDate(),
+                film.getDuration(), film.getMpa().getId(), film.getId());
+        if (result != 1) {
+            throw new NotFoundException("Фильм не найден.");
+        }
         return getFilmById(film.getId());
     }
 
     @Override
     public Film getFilmById(int id) {
-        String qs = "SELECT film_id, name, description, release_date, duration, MPA_id, rate FROM films " +
+        String qs = "SELECT film_id, name, description, release_date, duration, Mpa_rating_id, rate FROM films " +
                 "WHERE film_id = ?";
-            return jdbcTemplate.queryForObject(qs, this::mapRowToFilm, id);
+        try {
+            return jdbcTemplate.queryForObject(qs, this::makeFilm, id);
+        } catch (DataAccessException e) {
+            throw new NotFoundException("Фильм не найден.");
+        }
     }
 
-    private Film mapRowToFilm(ResultSet resultSet, int rowNum) throws SQLException {
-        Film film = new Film(resultSet.getString("name"), resultSet.getString("description"),
-                resultSet.getDate("release_date").toLocalDate(), resultSet.getInt("duration"),
-                mpaDao.getById(resultSet.getInt("MPA_id")));
-        film.setId(resultSet.getInt("film_id"));
-        film.setRate(resultSet.getInt("rate"));
+    @Override
+    public List<Film> getPopularFilms(int count) {
+        String qs = "SELECT film_id, name, description, release_date, duration, Mpa_rating_id, rate " +
+                "FROM films ORDER BY rate DESC LIMIT ?";
+        return jdbcTemplate.query(qs, this::makeFilm, count);
+    }
+
+    private Film makeFilm(ResultSet rs, int rowNum) throws SQLException {
+        Film film = new Film(rs.getString("name"),
+                rs.getString("description"),
+                rs.getDate("release_date").toLocalDate(),
+                rs.getInt("duration"),
+                mpaDao.getById(rs.getInt("Mpa_rating_id")));
+        film.setId(rs.getInt("film_id"));
+        film.setRate(rs.getInt("rate"));
 
         return film;
     }

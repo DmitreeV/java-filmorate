@@ -8,8 +8,10 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.dao.FilmDao;
 import ru.yandex.practicum.filmorate.dao.LikeDao;
+import ru.yandex.practicum.filmorate.dao.UserDao;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -23,6 +25,7 @@ public class FilmDaoTest {
 
     private final FilmDao filmDao;
     private final LikeDao likeDao;
+    private final UserDao userDao;
 
 
     @BeforeEach
@@ -39,6 +42,14 @@ public class FilmDaoTest {
         Film film3 = new Film("Inferno", "test save film",
                 LocalDate.of(2016, 10, 8), 121, new Mpa(3, "PG-13"));
         Film newFilm3 = filmDao.saveFilm(film3);
+
+        User user1 = new User("dmitree@mail.ru", "Dmitree30",
+                LocalDate.of(1993, 5, 30));
+        User newUser1 = userDao.saveUser(user1);
+
+        User user2 = new User("katrin@mail.ru", "Katrin12",
+                LocalDate.of(1985, 6, 21));
+        User newUser2 = userDao.saveUser(user2);
     }
 
     @Test
@@ -48,7 +59,7 @@ public class FilmDaoTest {
                 LocalDate.of(2012, 9, 8), 172, new Mpa(4, "R"));
         Film newFilm4 = filmDao.saveFilm(film4);
 
-        assertEquals("R", newFilm4.getMpa().getMpaName());
+        assertEquals("R", newFilm4.getMpa().getName());
         assertEquals(4, newFilm4.getId());
         assertEquals(4, filmDao.getAllFilms().size());
     }
@@ -82,5 +93,13 @@ public class FilmDaoTest {
         List<Film> films = filmDao.getAllFilms();
 
         assertEquals(7, films.size());
+    }
+
+    @Test
+    void testSaveLike() {
+
+        int result = likeDao.saveLike(1, 1);
+
+        assertEquals(1, result);
     }
 }

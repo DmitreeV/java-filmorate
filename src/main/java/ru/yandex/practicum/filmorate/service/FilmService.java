@@ -5,15 +5,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.FilmDao;
 import ru.yandex.practicum.filmorate.dao.GenreDao;
+import ru.yandex.practicum.filmorate.dao.LikeDao;
 import ru.yandex.practicum.filmorate.dao.UserDao;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,37 +22,56 @@ public class FilmService {
     private final FilmDao filmDao;
     private final UserDao userDao;
     private final GenreDao genreDao;
+    private final LikeDao likeDao;
     private final static LocalDate OLD_DATE = LocalDate.of(1895, 12, 28);
 
     @Autowired
-    public FilmService(FilmDao filmDao, UserDao userDao, GenreDao genreDao) {
+    public FilmService(FilmDao filmDao, UserDao userDao, GenreDao genreDao, LikeDao likeDao) {
         this.filmDao = filmDao;
         this.userDao = userDao;
         this.genreDao = genreDao;
+        this.likeDao = likeDao;
     }
 
     public List<Film> getAllFilms() {
-        return filmDao.getAllFilms();
+        List<Film> list = filmDao.getAllFilms();
+        for (Film film: list) {
+            film.setGenres(genreDao.getGenresByFilmId(film.getId()));
+        }
+        return list;
     }
 
     public Film saveFilm(Film film) {
         validateFilm(film);
-        return filmDao.saveFilm(film);
+        Film savedFilm = filmDao.saveFilm(film);
+        if (film.getGenres() != null) {
+            genreDao.filmGenreUpdate(savedFilm.getId(), film.getGenres());
+        }
+        savedFilm.setGenres(genreDao.getGenresByFilmId(savedFilm.getId()));
+        return savedFilm;
     }
 
     public Film updateFilm(Film film) {
         validateFilm(film);
-        return filmDao.updateFilm(film);
+        Film updatedFilm = filmDao.updateFilm(film);
+        genreDao.deleteGenresByFilmId(film.getId());
+        if (film.getGenres() != null) {
+            genreDao.filmGenreUpdate(film.getId(), film.getGenres());
+        }
+        updatedFilm.setGenres(genreDao.getGenresByFilmId(film.getId()));
+        return updatedFilm;
     }
 
     public Film getFilmById(int id) {
-        return filmDao.getFilmById(id);
+        Film film = filmDao.getFilmById(id);
+        film.setGenres(genreDao.getGenresByFilmId(film.getId()));
+        return film;
     }
 
     public Film addLike(int filmId, int userId) {
         Film film = filmDao.getFilmById(filmId);
         User user = userDao.getUserById(userId);
-        film.addLike(userId);
+        likeDao.saveLike(filmId, userId);
         log.info("Пользователь " + user.getName() + " поставил лайк фильму " + film.getName());
         return film;
     }
@@ -62,13 +79,13 @@ public class FilmService {
     public Film deleteLike(int filmId, int userId) {
         Film film = filmDao.getFilmById(filmId);
         User user = userDao.getUserById(userId);
-        film.deleteLike(userId);
+        likeDao.removeLike(filmId, userId);
         log.info("Пользователь " + user.getName() + " убрал лайк у фильма " + film.getName());
         return film;
     }
 
-    public List<Film> getPopularFilms(Integer countFilms) {
-        Collection<Film> films = filmDao.getAllFilms();
+    public List<Film> getPopularFilms(int countFilms) {
+        List<Film> films = filmDao.getPopularFilms(countFilms);
         log.info("Список десяти самых популярных фильмов");
         return films.stream()
                 .sorted(this::compare)
@@ -77,7 +94,7 @@ public class FilmService {
     }
 
     private int compare(Film f0, Film f1) {
-        return -1 * Integer.compare(f0.getLikes().size(), f1.getLikes().size());
+        return f1.getRate() - f0.getRate();
     }
 
     public static void validateFilm(Film film) {

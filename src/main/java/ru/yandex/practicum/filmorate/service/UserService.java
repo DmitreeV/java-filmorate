@@ -7,10 +7,8 @@ import ru.yandex.practicum.filmorate.dao.FriendsDao;
 import ru.yandex.practicum.filmorate.dao.UserDao;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -44,46 +42,20 @@ public class UserService {
         return userDao.getUserById(id);
     }
 
-    public User addFriend(int userId, int friendId) {
-        User user = userDao.getUserById(userId);
-        User friend = userDao.getUserById(friendId);
-        user.addFriend(friendId);
-        friend.addFriend(userId);
-        log.info("Пользователь " + user.getName() + " добавлен в список друзей " + friend.getName());
-        return user;
+    public void addFriend(int userId, int friendId) {
+        friendsDao.saveFriend(userId, friendId);
     }
 
-    public User deleteFriend(int userId, int friendId) {
-        User user = userDao.getUserById(userId);
-        User friend = userDao.getUserById(friendId);
-        user.deleteFriend(friendId);
-        friend.deleteFriend(userId);
-        log.info("Пользователь " + user.getName() + " удален из списка друзей " + friend.getName());
-        return user;
+    public void deleteFriend(int userId, int friendId) {
+        friendsDao.removeFriend(userId, friendId);
     }
 
     public List<User> getFriends(int userId) {
-        User user = userDao.getUserById(userId);
-        List<User> friendsList = new ArrayList<>();
-        for (Integer id : user.getFriends()) {
-            friendsList.add(userDao.getUserById(id));
-        }
-        log.info("Список друзей пользователя " + user.getName());
-        return friendsList;
+        return userDao.getFriends(userId);
     }
 
     public List<User> corporateFriends(int userId, int friendId) {
-        User user = userDao.getUserById(userId);
-        User friend = userDao.getUserById(friendId);
-        List<User> mutualFriends = new ArrayList<>();
-        for (Integer id : user.getFriends()) {
-            if (friend.getFriends().contains(id)) {
-                User mutualFriend = userDao.getUserById((id));
-                mutualFriends.add(mutualFriend);
-            }
-        }
-        log.info("Список общих друзей пользователей");
-        return mutualFriends;
+        return userDao.getCorporateFriends(userId, friendId);
     }
 
     public static void validateUser(User user) {

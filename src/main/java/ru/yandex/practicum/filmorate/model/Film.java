@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -8,6 +10,8 @@ import java.util.List;
 import java.util.Set;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Film {
 
     private int id;
@@ -24,7 +28,6 @@ public class Film {
     private Set<Integer> likes = new HashSet<>();
     private int likesCounter;
 
-
     //конструктор для тестов
     public Film(int id, String name, String description, LocalDate releaseDate, int duration) {
         this.id = id;
@@ -33,7 +36,7 @@ public class Film {
         this.releaseDate = releaseDate;
         this.duration = duration;
     }
-    //конструктор для тестов
+
     public Film( String name, String description, LocalDate releaseDate, int duration, Mpa mpa) {
         this.name = name;
         this.description = description;

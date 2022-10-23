@@ -13,4 +13,6 @@ public interface FilmDao {
     Film updateFilm(Film film);
 
     Film getFilmById(int id);
+
+    List<Film> getPopularFilms(int count);
 }

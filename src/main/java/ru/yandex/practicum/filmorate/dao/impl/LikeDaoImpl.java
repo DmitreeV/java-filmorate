@@ -16,12 +16,12 @@ public class LikeDaoImpl implements LikeDao {
     @Override
     public int saveLike(int filmId, int userId) {
         String qs = "INSERT INTO likes_list (film_id, user_id) VALUES (?, ?)";
-        return jdbcTemplate.update(qs, userId, filmId);
+        return jdbcTemplate.update(qs, filmId, userId);
     }
 
     @Override
     public int removeLike(int filmId, int userId) {
         String qs = "DELETE FROM likes_list WHERE user_id = ? AND film_id = ?";
-        return jdbcTemplate.update(qs, userId, filmId);
+        return jdbcTemplate.update(qs, filmId, userId);
     }
 }

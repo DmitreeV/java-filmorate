@@ -97,4 +97,18 @@ public class UserDaoTest {
 
         assertEquals(0, result);
     }
+
+    @Test
+    void testGetFriends() {
+        List<User> friends = userDao.getFriends(1);
+
+        assertEquals(0, friends.size());
+    }
+
+    @Test
+    void getCorporateFriends() {
+        List<User> friends = userDao.getCorporateFriends(2, 3);
+
+        assertEquals(0, friends.size());
+    }
 }

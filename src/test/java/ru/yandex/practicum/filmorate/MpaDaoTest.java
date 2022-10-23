@@ -25,9 +25,9 @@ public class MpaDaoTest {
         Mpa mpaRating2 = mpaDao.getById(3);
         Mpa mpaRating3 = mpaDao.getById(5);
 
-        assertEquals("G", mpaRating1.getMpaName());
-        assertEquals("PG-13", mpaRating2.getMpaName());
-        assertEquals("NC-17", mpaRating3.getMpaName());
+        assertEquals("G", mpaRating1.getName());
+        assertEquals("PG-13", mpaRating2.getName());
+        assertEquals("NC-17", mpaRating3.getName());
     }
 
     @Test
