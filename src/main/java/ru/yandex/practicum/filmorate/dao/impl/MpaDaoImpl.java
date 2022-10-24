@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.dao.impl;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.MpaDao;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.ResultSet;
@@ -21,16 +20,13 @@ public class MpaDaoImpl implements MpaDao {
 
     @Override
     public Mpa getById(int id) {
-        String qs = "SELECT MPA_id, MPA_name FROM MPA_rating WHERE MPA_id = ?";
-        if (id < 0 ) {
-            throw new NotFoundException("Неверно передан ID MPA.");
-        }
+        String qs = "SELECT * FROM MPA_rating WHERE MPA_id = ?";
         return jdbcTemplate.queryForObject(qs, this::makeMpa, id);
     }
 
     @Override
     public List<Mpa> getAll() {
-        String qs = "SELECT MPA_id, MPA_name FROM MPA_rating";
+        String qs = "SELECT * FROM MPA_rating";
         return jdbcTemplate.query(qs, this::makeMpa);
     }
 

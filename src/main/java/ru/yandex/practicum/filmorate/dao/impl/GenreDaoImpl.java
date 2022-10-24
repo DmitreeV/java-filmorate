@@ -4,7 +4,6 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.GenreDao;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.sql.PreparedStatement;
@@ -24,24 +23,21 @@ public class GenreDaoImpl implements GenreDao {
 
     @Override
     public Genre getById(int id) {
-        String qs = "SELECT id, name FROM genres WHERE id = ?";
-        if (id < 0) {
-            throw new NotFoundException("Неверно передан ID Genre.");
-        }
+        String qs = "SELECT * FROM genres WHERE id = ?";
         return jdbcTemplate.queryForObject(qs, this::makeGenre, id);
     }
 
     @Override
     public List<Genre> getAll() {
-        String qs = "SELECT id, name FROM genres";
+        String qs = "SELECT * FROM genres";
         return jdbcTemplate.query(qs, this::makeGenre);
     }
 
     @Override
     public List<Genre> getGenresByFilmId(int filmId) {
-        String qs = "SELECT id, name FROM genres WHERE id IN " +
-                "(SELECT id FROM films_genres WHERE film_id = ?)";
-
+        String qs = "SELECT * FROM genres g " +
+                "INNER JOIN films_genres fg on g.id = fg.id " +
+                "WHERE film_id = ?";
         return jdbcTemplate.query(qs, this::makeGenre, filmId);
     }
 

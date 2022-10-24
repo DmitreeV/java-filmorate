@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.GenreDao;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.List;
@@ -20,6 +21,9 @@ public class GenreService {
     }
 
     public Genre getById(int id) {
+        if (id < 0) {
+            throw new NotFoundException("Неверно передан ID Genre.");
+        }
         return genreDao.getById(id);
     }
 

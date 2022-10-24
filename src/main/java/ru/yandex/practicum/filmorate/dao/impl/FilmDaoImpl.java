@@ -29,7 +29,11 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public List<Film> getAllFilms() {
-        String qs = "SELECT film_id, name, description, release_date, duration, Mpa_rating_id, rate FROM films";
+        String qs = "SELECT * FROM films AS f " +
+                "LEFT JOIN films_genres fg ON f.film_id = fg.film_id " +
+                "LEFT JOIN MPA_rating m ON m.MPA_id = f.mpa_rating_id " +
+                "LEFT JOIN likes_list ll on f.film_id = ll.film_id " +
+                "LEFT JOIN genres g ON g.id = fg.id;";
         return jdbcTemplate.query(qs, this::makeFilm);
     }
 
@@ -40,7 +44,7 @@ public class FilmDaoImpl implements FilmDao {
         values.put("description", film.getDescription());
         values.put("release_date", Date.valueOf(film.getReleaseDate()));
         values.put("duration", film.getDuration());
-        values.put("Mpa_rating_id", film.getMpa().getId());
+        values.put("mpa_rating_id", film.getMpa().getId());
         values.put("rate", film.getRate());
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("films")
@@ -52,7 +56,7 @@ public class FilmDaoImpl implements FilmDao {
     @Override
     public Film updateFilm(Film film) {
         String qs = "UPDATE films SET name = ?, description = ?, release_date = ?, " +
-                "duration = ?, Mpa_rating_id = ? WHERE film_id = ?";
+                "duration = ?, mpa_rating_id = ? WHERE film_id = ?";
         int result = jdbcTemplate.update(qs, film.getName(), film.getDescription(), film.getReleaseDate(),
                 film.getDuration(), film.getMpa().getId(), film.getId());
         if (result != 1) {
@@ -63,8 +67,7 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public Film getFilmById(int id) {
-        String qs = "SELECT film_id, name, description, release_date, duration, Mpa_rating_id, rate FROM films " +
-                "WHERE film_id = ?";
+        String qs = "SELECT * FROM films WHERE film_id = ?";
         try {
             return jdbcTemplate.queryForObject(qs, this::makeFilm, id);
         } catch (DataAccessException e) {
@@ -74,8 +77,14 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public List<Film> getPopularFilms(int count) {
-        String qs = "SELECT film_id, name, description, release_date, duration, Mpa_rating_id, rate " +
-                "FROM films ORDER BY rate DESC LIMIT ?";
+        final String qs = "SELECT * FROM films AS f " +
+                "LEFT JOIN films_genres fg ON f.film_id = fg.film_id " +
+                "LEFT JOIN MPA_rating m ON m.MPA_id = f.mpa_rating_id " +
+                "LEFT JOIN genres g ON g.id = fg.id " +
+                "LEFT OUTER JOIN likes_list fl on f.film_id = fl.film_id " +
+                "GROUP BY f.film_id " +
+                "ORDER BY COUNT(fl.film_id) " +
+                "DESC LIMIT ?;";
         return jdbcTemplate.query(qs, this::makeFilm, count);
     }
 
@@ -84,7 +93,7 @@ public class FilmDaoImpl implements FilmDao {
                 rs.getString("description"),
                 rs.getDate("release_date").toLocalDate(),
                 rs.getInt("duration"),
-                mpaDao.getById(rs.getInt("Mpa_rating_id")));
+                mpaDao.getById(rs.getInt("mpa_rating_id")));
         film.setId(rs.getInt("film_id"));
         film.setRate(rs.getInt("rate"));
 

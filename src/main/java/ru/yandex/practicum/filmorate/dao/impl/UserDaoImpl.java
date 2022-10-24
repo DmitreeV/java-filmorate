@@ -25,7 +25,7 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public List<User> getAllUsers() {
-        String qs = "SELECT user_id, email, login, name, birthday FROM users";
+        String qs = "SELECT * FROM users";
         return jdbcTemplate.query(qs, this::makeUser);
     }
 
@@ -56,7 +56,7 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public User getUserById(int id) {
-        String qs = "SELECT user_id, email, login, name, birthday FROM users WHERE user_id = ?";
+        String qs = "SELECT * FROM users WHERE user_id = ?";
         try {
             return jdbcTemplate.queryForObject(qs, this::makeUser, id);
         } catch (DataAccessException e) {
@@ -66,18 +66,22 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public List<User> getFriends(int userId) {
-        String qs = "SELECT user_id, email, login, name, birthday FROM users " +
-                "WHERE user_id IN (SELECT friend_id FROM friendships WHERE user_id = ?)";
+        String qs = "SELECT u.* FROM friendships f " +
+                "JOIN users u on f.friend_id = u.user_id " +
+                "WHERE f.user_id = ?;";
         return jdbcTemplate.query(qs, this::makeUser, userId);
     }
 
     @Override
     public List<User> getCorporateFriends(int userId, int friendId) {
-        String qs = "SELECT user_id, email, login, name, birthday FROM users " +
-                "WHERE user_id IN " +
-                "(SELECT friend_id FROM friendships WHERE user_id = ? AND friend_id NOT IN (?, ?) AND " +
-                "friend_id IN (SELECT friend_id FROM friendships WHERE user_id = ?))";
-        return jdbcTemplate.query(qs, this::makeUser, userId, friendId, userId, friendId);
+        String qs = "SELECT u.* FROM friendships f " +
+                "JOIN users u ON f.friend_id = u.user_id " +
+                "WHERE u.user_id = ? " +
+                "UNION " +
+                "SELECT u.* FROM friendships f " +
+                "JOIN users u ON f.friend_id = u.user_id " +
+                "WHERE f.user_id = ?;";
+        return jdbcTemplate.query(qs, this::makeUser, userId, friendId);
     }
 
     private User makeUser(ResultSet rs, int rowNum) throws SQLException {

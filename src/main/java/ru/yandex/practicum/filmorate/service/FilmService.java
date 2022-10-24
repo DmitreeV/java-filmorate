@@ -71,6 +71,7 @@ public class FilmService {
     public Film addLike(int filmId, int userId) {
         Film film = filmDao.getFilmById(filmId);
         User user = userDao.getUserById(userId);
+        film.setRate(film.getRate() + 1);
         likeDao.saveLike(filmId, userId);
         log.info("Пользователь " + user.getName() + " поставил лайк фильму " + film.getName());
         return film;
@@ -79,6 +80,7 @@ public class FilmService {
     public Film deleteLike(int filmId, int userId) {
         Film film = filmDao.getFilmById(filmId);
         User user = userDao.getUserById(userId);
+        film.setRate(film.getRate() - 1);
         likeDao.removeLike(filmId, userId);
         log.info("Пользователь " + user.getName() + " убрал лайк у фильма " + film.getName());
         return film;
