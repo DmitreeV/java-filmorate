@@ -37,7 +37,9 @@ public class FilmService {
         List<Film> list = filmDao.getAllFilms();
         for (Film film: list) {
             film.setGenres(genreDao.getGenresByFilmId(film.getId()));
+            film.setLikes(likeDao.getLike(film.getId()));
         }
+        log.info("Получен список всех фильмов.");
         return list;
     }
 
@@ -48,6 +50,8 @@ public class FilmService {
             genreDao.filmGenreUpdate(savedFilm.getId(), film.getGenres());
         }
         savedFilm.setGenres(genreDao.getGenresByFilmId(savedFilm.getId()));
+
+        log.info("Фильм сохранен.");
         return savedFilm;
     }
 
@@ -59,12 +63,16 @@ public class FilmService {
             genreDao.filmGenreUpdate(film.getId(), film.getGenres());
         }
         updatedFilm.setGenres(genreDao.getGenresByFilmId(film.getId()));
+        updatedFilm.setLikes(likeDao.getLike(film.getId()));
+        log.info("Данные фильма обновлены.");
         return updatedFilm;
     }
 
     public Film getFilmById(int id) {
         Film film = filmDao.getFilmById(id);
         film.setGenres(genreDao.getGenresByFilmId(film.getId()));
+        film.setLikes(likeDao.getLike(film.getId()));
+        log.info("Получен фильм с идентификатором " + id + ".");
         return film;
     }
 
@@ -73,7 +81,7 @@ public class FilmService {
         User user = userDao.getUserById(userId);
         film.setRate(film.getRate() + 1);
         likeDao.saveLike(filmId, userId);
-        log.info("Пользователь " + user.getName() + " поставил лайк фильму " + film.getName());
+        log.info("Пользователь " + user.getName() + " поставил лайк фильму " + film.getName() + ".");
         return film;
     }
 
@@ -82,13 +90,13 @@ public class FilmService {
         User user = userDao.getUserById(userId);
         film.setRate(film.getRate() - 1);
         likeDao.removeLike(filmId, userId);
-        log.info("Пользователь " + user.getName() + " убрал лайк у фильма " + film.getName());
+        log.info("Пользователь " + user.getName() + " убрал лайк у фильма " + film.getName() + ".");
         return film;
     }
 
     public List<Film> getPopularFilms(int countFilms) {
         List<Film> films = filmDao.getPopularFilms(countFilms);
-        log.info("Список десяти самых популярных фильмов");
+        log.info("Список из " + countFilms + " самых популярных фильмов.");
         return films.stream()
                 .sorted(this::compare)
                 .limit(countFilms)

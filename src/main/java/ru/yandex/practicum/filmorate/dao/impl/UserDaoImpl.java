@@ -85,12 +85,10 @@ public class UserDaoImpl implements UserDao {
     }
 
     private User makeUser(ResultSet rs, int rowNum) throws SQLException {
-        User user = new User(rs.getString("email"),
+        return new User(rs.getInt("user_id"),
+                rs.getString("email"),
                 rs.getString("login"),
+                rs.getString("name"),
                 rs.getDate("birthday").toLocalDate());
-        user.setName(rs.getString("name"));
-        user.setId(rs.getInt("user_id"));
-
-        return user;
     }
 }

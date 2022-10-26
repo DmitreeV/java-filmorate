@@ -1,11 +1,11 @@
 package ru.yandex.practicum.filmorate;
 
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.dao.FriendsDao;
 import ru.yandex.practicum.filmorate.dao.UserDao;
 import ru.yandex.practicum.filmorate.model.User;
@@ -18,97 +18,144 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class UserDaoTest {
 
     private final UserDao userDao;
     private final FriendsDao friendsDao;
 
-    @BeforeEach
-    public void saveTestUsers(){
-
-        User user1 = new User(1,"dmitree@mail.ru", "Dmitree30", "Dmitree" ,
-                LocalDate.of(1993, 5, 30));
-        User newUser1 = userDao.saveUser(user1);
-
-        User user2 = new User(2,"katrin@mail.ru", "Katrin12", "Katrin",
-                LocalDate.of(1985, 6, 21));
-        User newUser2 = userDao.saveUser(user2);
-
-        User user3 = new User(3,"elena@mail.ru", "Elena222","Elena",
-                LocalDate.of(1976, 11, 2));
-        User newUser3 = userDao.saveUser(user3);
-    }
-
     @Test
     void testSaveFilm() {
 
-        User user4 = new User(4,"daniil@mail.ru", "Daniil88", "Daniil",
+        User testUser = new User("daniil@mail.ru", "Daniil88", "Daniil",
                 LocalDate.of(1988, 8, 14));
-        User newUser4 = userDao.saveUser(user4);
+        userDao.saveUser(testUser);
 
-        assertEquals("Daniil88", newUser4.getLogin());
-        assertEquals(4, newUser4.getId());
-        assertEquals(4, userDao.getAllUsers().size());
+        assertEquals("Daniil88", testUser.getLogin());
+        assertEquals(1, testUser.getId());
+        assertEquals(1, userDao.getAllUsers().size());
     }
 
     @Test
     void testUpdateUser() {
 
-        User user = new User(3,"elena@mail.ru", "Elena222","Elena",
+        User testUser = new User("elena@mail.ru", "Elena222", "Elena",
                 LocalDate.of(1976, 11, 2));
-        user.setBirthday(LocalDate.of(1988, 8, 15));
-        user.setEmail("elena@yandex.ru");
-        User newUser = userDao.updateUser(user);
+        userDao.saveUser(testUser);
+        testUser.setBirthday(LocalDate.of(1988, 8, 15));
+        testUser.setEmail("elena@yandex.ru");
+        userDao.updateUser(testUser);
 
-        assertEquals("elena@yandex.ru", userDao.getUserById(3).getEmail());
-        assertEquals(LocalDate.of(1988, 8, 15), userDao.getUserById(3).getBirthday());
+        assertEquals("elena@yandex.ru", userDao.getUserById(1).getEmail());
+        assertEquals(LocalDate.of(1988, 8, 15), userDao.getUserById(1).getBirthday());
     }
 
     @Test
     void testGetUserById() {
 
-        User user1 = userDao.getUserById(1);
-        User user2 = userDao.getUserById(3);
+        User user1 = new User("dmitree@mail.ru", "Dmitree30", "Dmitree",
+                LocalDate.of(1993, 5, 30));
+        userDao.saveUser(user1);
+
+        User user2 = new User("katrin@mail.ru", "Katrin12", "Katrin",
+                LocalDate.of(1985, 6, 21));
+        userDao.saveUser(user2);
 
         assertEquals("Dmitree", user1.getName());
-        assertEquals("Elena", user2.getName());
+        assertEquals("Katrin", user2.getName());
     }
 
     @Test
     void testGetAllUsers() {
 
+        User user1 = new User("dmitree@mail.ru", "Dmitree30", "Dmitree",
+                LocalDate.of(1993, 5, 30));
+        userDao.saveUser(user1);
+
+        User user2 = new User("katrin@mail.ru", "Katrin12", "Katrin",
+                LocalDate.of(1985, 6, 21));
+        userDao.saveUser(user2);
+
         List<User> users = userDao.getAllUsers();
 
-        assertEquals(3, users.size());
+        assertEquals(2, users.size());
     }
 
     @Test
     void testSaveFriend() {
 
-        int result = friendsDao.saveFriend(1, 2);
-        int res = friendsDao.saveFriend(1, 3);
+        User user1 = new User("dmitree@mail.ru", "Dmitree30", "Dmitree",
+                LocalDate.of(1993, 5, 30));
+        userDao.saveUser(user1);
 
-        assertEquals(2, result + res );
+        User user2 = new User("katrin@mail.ru", "Katrin12", "Katrin",
+                LocalDate.of(1985, 6, 21));
+        userDao.saveUser(user2);
+
+        friendsDao.saveFriend(1, 2);
+
+        List<User> friends = userDao.getFriends(user1.getId());
+
+        assertEquals(friends.size(), 1);
     }
 
     @Test
     void testRemoveFriend() {
-        int result = friendsDao.removeFriend(1, 2);
 
-        assertEquals(0, result);
+        User user1 = new User("dmitree@mail.ru", "Dmitree30", "Dmitree",
+                LocalDate.of(1993, 5, 30));
+        userDao.saveUser(user1);
+
+        User user2 = new User("katrin@mail.ru", "Katrin12", "Katrin",
+                LocalDate.of(1985, 6, 21));
+        userDao.saveUser(user2);
+
+        friendsDao.saveFriend(1, 2);
+
+        friendsDao.removeFriend(1, 2);
+
+        List<User> friends = userDao.getFriends(user1.getId());
+
+        assertEquals(friends.size(), 0);
     }
 
     @Test
     void testGetFriends() {
-        List<User> friends = userDao.getFriends(1);
+        User user1 = new User("dmitree@mail.ru", "Dmitree30", "Dmitree",
+                LocalDate.of(1993, 5, 30));
+        userDao.saveUser(user1);
 
-        assertEquals(0, friends.size());
+        User user2 = new User("katrin@mail.ru", "Katrin12", "Katrin",
+                LocalDate.of(1985, 6, 21));
+        userDao.saveUser(user2);
+
+        friendsDao.saveFriend(1, 2);
+
+        List<User> friends = userDao.getFriends(user1.getId());
+
+        assertEquals(friends.size(), 1);
+        assertEquals(friends.get(0), user2);
     }
 
     @Test
-    void getCorporateFriends() {
-        List<User> friends = userDao.getCorporateFriends(2, 3);
+    public void testGetCorporateFriends() {
+        User user1 = new User("dmitree@mail.ru", "Dmitree30", "Dmitree",
+                LocalDate.of(1993, 5, 30));
+        userDao.saveUser(user1);
 
-        assertEquals(0, friends.size());
+        User user2 = new User("katrin@mail.ru", "Katrin12", "Katrin",
+                LocalDate.of(1985, 6, 21));
+        userDao.saveUser(user2);
+
+        User testUser = new User("daniil@mail.ru", "Daniil88", "Daniil",
+                LocalDate.of(1988, 8, 14));
+        userDao.saveUser(testUser);
+
+        friendsDao.saveFriend(user1.getId(), testUser.getId());
+        friendsDao.saveFriend(user2.getId(), testUser.getId());
+
+        List<User> userCommonFriends = userDao.getCorporateFriends(user1.getId(), user2.getId());
+        System.out.println(userCommonFriends);
+        assertEquals(userCommonFriends.get(0), testUser);
     }
 }

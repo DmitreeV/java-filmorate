@@ -26,20 +26,24 @@ public class UserService {
     }
 
     public List<User> getAllUsers() {
+        log.info("Получен список всех пользователей.");
         return userDao.getAllUsers();
     }
 
     public User saveUser(User user) {
         validateUser(user);
+        log.info("Пользователь сохранен.");
         return userDao.saveUser(user);
     }
 
     public User updateUser(User user) {
         validateUser(user);
+        log.info("Данные пользователя обновлены.");
         return userDao.updateUser(user);
     }
 
     public User getUserById(int id) {
+        log.info("Получен пользователь с идентификатором " + id + ".");
         return userDao.getUserById(id);
     }
 
@@ -47,18 +51,23 @@ public class UserService {
         if (userId < 0 || friendId < 0) {
             throw new NotFoundException("Пользователь не может быть добавлен.");
         }
+        log.info("Пользователь " + userId + " добавил в друзья пользователя " + friendId + ".");
         friendsDao.saveFriend(userId, friendId);
+
     }
 
     public void deleteFriend(int userId, int friendId) {
+        log.info("Пользователь " + userId + " удалил из друзей пользователя " + friendId + ".");
         friendsDao.removeFriend(userId, friendId);
     }
 
     public List<User> getFriends(int userId) {
+        log.info("Получен список друзей пользователя " + userId + ".");
         return userDao.getFriends(userId);
     }
 
     public List<User> corporateFriends(int userId, int friendId) {
+        log.info("Получен список общих друзей пользователя " + userId + " и пользователя " + friendId + ".");
         return userDao.getCorporateFriends(userId, friendId);
     }
 

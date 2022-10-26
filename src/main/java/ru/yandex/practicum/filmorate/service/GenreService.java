@@ -24,10 +24,12 @@ public class GenreService {
         if (id < 0) {
             throw new NotFoundException("Неверно передан ID Genre.");
         }
+        log.info("Получен жанр с идентификатором " + id + ".");
         return genreDao.getById(id);
     }
 
     public List<Genre> getAll() {
+        log.info("Получен список всех жанров.");
         return genreDao.getAll();
     }
 }

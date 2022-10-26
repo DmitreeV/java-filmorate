@@ -5,9 +5,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.FilmDao;
-import ru.yandex.practicum.filmorate.dao.MpaDao;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.Date;
 import java.sql.ResultSet;
@@ -19,21 +19,15 @@ import java.util.Map;
 @Component
 public class FilmDaoImpl implements FilmDao {
     private final JdbcTemplate jdbcTemplate;
-    private final MpaDao mpaDao;
 
-
-    public FilmDaoImpl(JdbcTemplate jdbcTemplate, MpaDao mpaDao) {
+    public FilmDaoImpl(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.mpaDao = mpaDao;
     }
 
     @Override
     public List<Film> getAllFilms() {
         String qs = "SELECT * FROM films AS f " +
-                "LEFT JOIN films_genres fg ON f.film_id = fg.film_id " +
-                "LEFT JOIN MPA_rating m ON m.MPA_id = f.mpa_rating_id " +
-                "LEFT JOIN likes_list ll on f.film_id = ll.film_id " +
-                "LEFT JOIN genres g ON g.id = fg.id;";
+                "LEFT JOIN MPA_rating m ON m.MPA_id = f.mpa_rating_id;";
         return jdbcTemplate.query(qs, this::makeFilm);
     }
 
@@ -67,7 +61,9 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public Film getFilmById(int id) {
-        String qs = "SELECT * FROM films WHERE film_id = ?";
+        String qs = "SELECT * FROM films AS f " +
+                "LEFT JOIN MPA_rating m ON m.MPA_id = f.mpa_rating_id " +
+                "WHERE f.film_id = ?;";
         try {
             return jdbcTemplate.queryForObject(qs, this::makeFilm, id);
         } catch (DataAccessException e) {
@@ -78,26 +74,27 @@ public class FilmDaoImpl implements FilmDao {
     @Override
     public List<Film> getPopularFilms(int count) {
         final String qs = "SELECT * FROM films AS f " +
-                "LEFT JOIN films_genres fg ON f.film_id = fg.film_id " +
                 "LEFT JOIN MPA_rating m ON m.MPA_id = f.mpa_rating_id " +
-                "LEFT JOIN genres g ON g.id = fg.id " +
-                "LEFT OUTER JOIN likes_list fl on f.film_id = fl.film_id " +
+                "LEFT OUTER JOIN likes_list ll on f.film_id = ll.film_id " +
                 "GROUP BY f.film_id " +
-                "ORDER BY COUNT(fl.film_id) " +
+                "ORDER BY COUNT(ll.film_id) " +
                 "DESC LIMIT ?;";
         return jdbcTemplate.query(qs, this::makeFilm, count);
     }
 
     private Film makeFilm(ResultSet rs, int rowNum) throws SQLException {
-        Film film = new Film(rs.getString("name"),
-                rs.getString("description"),
-                rs.getDate("release_date").toLocalDate(),
-                rs.getInt("duration"),
-                mpaDao.getById(rs.getInt("mpa_rating_id")));
-        film.setId(rs.getInt("film_id"));
-        film.setRate(rs.getInt("rate"));
-
-        return film;
+        return Film.builder()
+                .id(rs.getInt("film_id"))
+                .name(rs.getString("name"))
+                .description(rs.getString("description"))
+                .releaseDate(rs.getDate("release_date").toLocalDate())
+                .duration(rs.getInt("duration"))
+                .mpa(Mpa.builder()
+                        .id(rs.getInt("MPA_id"))
+                        .name(rs.getString("MPA_name"))
+                        .build())
+                .rate(rs.getInt("rate"))
+                .build();
     }
 }
 
