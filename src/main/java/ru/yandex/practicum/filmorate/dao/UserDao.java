@@ -11,6 +11,8 @@ public interface UserDao {
 
     User updateUser(User user);
 
+    int deleteUser(int id);
+
     User getUserById(int id);
 
     List<User> getFriends(int userId);

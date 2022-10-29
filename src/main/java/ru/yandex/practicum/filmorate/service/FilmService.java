@@ -35,10 +35,6 @@ public class FilmService {
 
     public List<Film> getAllFilms() {
         List<Film> list = filmDao.getAllFilms();
-        for (Film film: list) {
-            film.setGenres(genreDao.getGenresByFilmId(film.getId()));
-            film.setLikes(likeDao.getLike(film.getId()));
-        }
         log.info("Получен список всех фильмов.");
         return list;
     }
@@ -74,6 +70,11 @@ public class FilmService {
         film.setLikes(likeDao.getLike(film.getId()));
         log.info("Получен фильм с идентификатором " + id + ".");
         return film;
+    }
+
+    public int deleteFilm(int id) {
+        log.info("Фильм удален.");
+        return filmDao.deleteFilm(id);
     }
 
     public Film addLike(int filmId, int userId) {

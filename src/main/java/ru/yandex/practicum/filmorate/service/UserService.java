@@ -42,6 +42,11 @@ public class UserService {
         return userDao.updateUser(user);
     }
 
+    public int deleteUser(int id) {
+        log.info("Пользователь удален.");
+        return userDao.deleteUser(id);
+    }
+
     public User getUserById(int id) {
         log.info("Получен пользователь с идентификатором " + id + ".");
         return userDao.getUserById(id);

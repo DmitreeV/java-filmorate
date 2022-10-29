@@ -151,11 +151,55 @@ public class UserDaoTest {
                 LocalDate.of(1988, 8, 14));
         userDao.saveUser(testUser);
 
+        User user4 = new User("z@.ru", "NePutin", "Vladimir",
+                LocalDate.of(1965, 8, 22));
+        userDao.saveUser(user4);
+
+        User user5 = new User("kirill@.ru", "Patriarh", "Kirill",
+                LocalDate.of(1933, 8, 21));
+        userDao.saveUser(user5);
+
+        User user6 = new User("user6@.ru", "six6", "Aleksandr",
+                LocalDate.of(1933, 8, 21));
+        userDao.saveUser(user6);
+
         friendsDao.saveFriend(user1.getId(), testUser.getId());
         friendsDao.saveFriend(user2.getId(), testUser.getId());
+        friendsDao.saveFriend(user4.getId(), testUser.getId());
+        friendsDao.saveFriend(user5.getId(), testUser.getId());
+        friendsDao.saveFriend(user6.getId(), testUser.getId());
 
-        List<User> userCommonFriends = userDao.getCorporateFriends(user1.getId(), user2.getId());
+        friendsDao.saveFriend(user2.getId(), user1.getId());
+        friendsDao.saveFriend(user4.getId(), user1.getId());
+        friendsDao.saveFriend(user5.getId(), user1.getId());
+        friendsDao.saveFriend(user6.getId(), user1.getId());
+        friendsDao.saveFriend(testUser.getId(), user1.getId());
+
+        friendsDao.saveFriend(user2.getId(), user4.getId());
+        friendsDao.saveFriend(user4.getId(), user2.getId());
+        friendsDao.saveFriend(user5.getId(), user2.getId());
+        friendsDao.saveFriend(user6.getId(), user2.getId());
+        friendsDao.saveFriend(testUser.getId(), user4.getId());
+
+        List<User> userCommonFriends1 = userDao.getCorporateFriends(user4.getId(), user5.getId());
+        System.out.println(userCommonFriends1);
+        assertEquals(userCommonFriends1.get(0), user1);
+        assertEquals(userCommonFriends1.get(1), user2);
+        assertEquals(userCommonFriends1.get(2), testUser);
+
+        List<User> userCommonFriends = userDao.getCorporateFriends(user4.getId(), user6.getId());
         System.out.println(userCommonFriends);
-        assertEquals(userCommonFriends.get(0), testUser);
+        assertEquals(userCommonFriends1.get(0), user1);
+        assertEquals(userCommonFriends1.get(1), user2);
+        assertEquals(userCommonFriends1.get(2), testUser);
+
+        List<User> userCommonFriends2 = userDao.getCorporateFriends(user1.getId(), user2.getId());
+        System.out.println(userCommonFriends2);
+        assertEquals(userCommonFriends2.get(0).getName(), testUser.getName());
+
+        List<User> userCommonFriends3 = userDao.getCorporateFriends(user2.getId(), testUser.getId());
+        System.out.println(userCommonFriends3);
+        assertEquals(userCommonFriends3.get(0).getName(), user1.getName());
+        assertEquals(userCommonFriends3.get(1).getName(), user4.getName());
     }
 }

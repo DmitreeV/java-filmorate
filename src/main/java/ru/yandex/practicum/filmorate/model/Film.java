@@ -9,8 +9,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class Film {
 
@@ -20,10 +20,9 @@ public class Film {
     private LocalDate releaseDate;
     private int duration;
     private Mpa mpa;
-    private List<Genre> genres;
+    private List<Genre> genres ;
     private int rate;
     private List<Integer> likes ;
-    private int likesCounter;
 
     //конструктор для тестов FilmControllerTest
     public Film(int id, String name, String description, LocalDate releaseDate, int duration) {
@@ -45,11 +44,13 @@ public class Film {
 
     public void addLike(Integer id) {
         likes.add(id);
-        likesCounter ++;
     }
 
     public void deleteLike(Integer id) {
         likes.remove(id);
-        likesCounter --;
+    }
+
+    public void addGenre(Genre genre) {
+        genres.add(genre);
     }
 }

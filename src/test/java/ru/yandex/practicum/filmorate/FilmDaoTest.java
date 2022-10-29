@@ -38,6 +38,8 @@ public class FilmDaoTest {
         assertEquals("R", film.getMpa().getName());
         assertEquals(1, film.getId());
         assertEquals(1, filmDao.getAllFilms().size());
+
+        System.out.println(film);
     }
 
     @Test
@@ -82,6 +84,9 @@ public class FilmDaoTest {
         filmDao.saveFilm(film2);
 
         List<Film> films = filmDao.getAllFilms();
+
+        System.out.println(films.get(0));
+        System.out.println(films.get(1));
 
         assertEquals(2, films.size());
     }
@@ -143,6 +148,8 @@ public class FilmDaoTest {
         likeDao.saveLike(film2.getId(), user.getId());
 
         List<Film> popularFilm = filmDao.getPopularFilms(2);
+
+        System.out.println(popularFilm.get(0));
 
         assertEquals(popularFilm.size(), 2);
     }

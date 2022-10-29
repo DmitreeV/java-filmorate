@@ -55,6 +55,12 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
+    public int deleteUser(int id) {
+        String sqlQuery = "DELETE FROM users WHERE user_id = ?";
+        return jdbcTemplate.update(sqlQuery, id);
+    }
+
+    @Override
     public User getUserById(int id) {
         String qs = "SELECT * FROM users WHERE user_id = ?";
         try {
@@ -76,11 +82,9 @@ public class UserDaoImpl implements UserDao {
     public List<User> getCorporateFriends(int userId, int friendId) {
         String qs = "SELECT u.* FROM friendships f " +
                 "JOIN users u ON f.friend_id = u.user_id " +
-                "WHERE u.user_id = ? " +
-                "UNION " +
-                "SELECT u.* FROM friendships f " +
-                "JOIN users u ON f.friend_id = u.user_id " +
-                "WHERE f.user_id = ?;";
+                "WHERE f.user_id = ? OR f.user_id = ?" +
+                "GROUP BY f.friend_id " +
+                "HAVING COUNT(f.user_id) > 1;";
         return jdbcTemplate.query(qs, this::makeUser, userId, friendId);
     }
 

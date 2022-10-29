@@ -67,4 +67,11 @@ public class GenreDaoImpl implements GenreDao {
         String name = rs.getString("name");
         return new Genre(id, name);
     }
+
+    public static Genre createGenreByRs(ResultSet rs) throws SQLException {
+        return Genre.builder()
+                .id(rs.getInt("id"))
+                .name(rs.getString("name"))
+                .build();
+    }
 }
