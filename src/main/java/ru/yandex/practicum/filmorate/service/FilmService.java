@@ -1,15 +1,17 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.FilmDao;
+import ru.yandex.practicum.filmorate.dao.GenreDao;
+import ru.yandex.practicum.filmorate.dao.LikeDao;
+import ru.yandex.practicum.filmorate.dao.UserDao;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -17,52 +19,85 @@ import java.util.stream.Collectors;
 @Slf4j
 public class FilmService {
 
-    private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
+    private final FilmDao filmDao;
+    private final UserDao userDao;
+    private final GenreDao genreDao;
+    private final LikeDao likeDao;
     private final static LocalDate OLD_DATE = LocalDate.of(1895, 12, 28);
 
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
-        this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
+    @Autowired
+    public FilmService(FilmDao filmDao, UserDao userDao, GenreDao genreDao, LikeDao likeDao) {
+        this.filmDao = filmDao;
+        this.userDao = userDao;
+        this.genreDao = genreDao;
+        this.likeDao = likeDao;
     }
 
     public List<Film> getAllFilms() {
-        return filmStorage.getAllFilms();
+        List<Film> list = filmDao.getAllFilms();
+        log.info("Получен список всех фильмов.");
+        return list;
     }
 
     public Film saveFilm(Film film) {
         validateFilm(film);
-        return filmStorage.saveFilm(film);
+        Film savedFilm = filmDao.saveFilm(film);
+        if (film.getGenres() != null) {
+            genreDao.filmGenreUpdate(savedFilm.getId(), film.getGenres());
+        }
+        savedFilm.setGenres(genreDao.getGenresByFilmId(savedFilm.getId()));
+
+        log.info("Фильм сохранен.");
+        return savedFilm;
     }
 
     public Film updateFilm(Film film) {
         validateFilm(film);
-        return filmStorage.updateFilm(film);
+        Film updatedFilm = filmDao.updateFilm(film);
+        genreDao.deleteGenresByFilmId(film.getId());
+        if (film.getGenres() != null) {
+            genreDao.filmGenreUpdate(film.getId(), film.getGenres());
+        }
+        updatedFilm.setGenres(genreDao.getGenresByFilmId(film.getId()));
+        updatedFilm.setLikes(likeDao.getLike(film.getId()));
+        log.info("Данные фильма обновлены.");
+        return updatedFilm;
     }
 
     public Film getFilmById(int id) {
-        return filmStorage.getFilmById(id);
+        Film film = filmDao.getFilmById(id);
+        film.setGenres(genreDao.getGenresByFilmId(film.getId()));
+        film.setLikes(likeDao.getLike(film.getId()));
+        log.info("Получен фильм с идентификатором " + id + ".");
+        return film;
+    }
+
+    public int deleteFilm(int id) {
+        log.info("Фильм удален.");
+        return filmDao.deleteFilm(id);
     }
 
     public Film addLike(int filmId, int userId) {
-        Film film = filmStorage.getFilmById(filmId);
-        User user = userStorage.getUserById(userId);
-        film.addLike(userId);
-        log.info("Пользователь " + user.getName() + " поставил лайк фильму " + film.getName());
+        Film film = filmDao.getFilmById(filmId);
+        User user = userDao.getUserById(userId);
+        film.setRate(film.getRate() + 1);
+        likeDao.saveLike(filmId, userId);
+        log.info("Пользователь " + user.getName() + " поставил лайк фильму " + film.getName() + ".");
         return film;
     }
 
     public Film deleteLike(int filmId, int userId) {
-        Film film = filmStorage.getFilmById(filmId);
-        User user = userStorage.getUserById(userId);
-        film.deleteLike(userId);
-        log.info("Пользователь " + user.getName() + " убрал лайк у фильма " + film.getName());
+        Film film = filmDao.getFilmById(filmId);
+        User user = userDao.getUserById(userId);
+        film.setRate(film.getRate() - 1);
+        likeDao.removeLike(filmId, userId);
+        log.info("Пользователь " + user.getName() + " убрал лайк у фильма " + film.getName() + ".");
         return film;
     }
 
-    public List<Film> getPopularFilms(Integer countFilms) {
-        Collection<Film> films = filmStorage.getAllFilms();
-        log.info("Список десяти самых популярных фильмов");
+    public List<Film> getPopularFilms(int countFilms) {
+        List<Film> films = filmDao.getPopularFilms(countFilms);
+        log.info("Список из " + countFilms + " самых популярных фильмов.");
         return films.stream()
                 .sorted(this::compare)
                 .limit(countFilms)
@@ -70,7 +105,7 @@ public class FilmService {
     }
 
     private int compare(Film f0, Film f1) {
-        return -1 * Integer.compare(f0.getLikes().size(), f1.getLikes().size());
+        return f1.getRate() - f0.getRate();
     }
 
     public static void validateFilm(Film film) {

@@ -1,12 +1,17 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Film {
 
     private int id;
@@ -14,10 +19,12 @@ public class Film {
     private String description;
     private LocalDate releaseDate;
     private int duration;
-    private Set<Integer> likes = new HashSet<>();
-    private int likesCounter;
+    private Mpa mpa;
+    private List<Genre> genres ;
+    private int rate;
+    private List<Integer> likes ;
 
-    //конструктор для тестов
+    //конструктор для тестов FilmControllerTest
     public Film(int id, String name, String description, LocalDate releaseDate, int duration) {
         this.id = id;
         this.name = name;
@@ -26,13 +33,24 @@ public class Film {
         this.duration = duration;
     }
 
+    //конструктор для тестов FilmDaoTest
+    public Film(String name, String description, LocalDate releaseDate, int duration, Mpa mpa) {
+        this.name = name;
+        this.description = description;
+        this.releaseDate = releaseDate;
+        this.duration = duration;
+        this.mpa = mpa;
+    }
+
     public void addLike(Integer id) {
         likes.add(id);
-        likesCounter ++;
     }
 
     public void deleteLike(Integer id) {
         likes.remove(id);
-        likesCounter --;
+    }
+
+    public void addGenre(Genre genre) {
+        genres.add(genre);
     }
 }

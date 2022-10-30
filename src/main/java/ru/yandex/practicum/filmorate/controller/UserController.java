@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -9,7 +8,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/users")
-@Slf4j
 public class UserController {
 
     private final UserService userService;
@@ -33,19 +31,24 @@ public class UserController {
         return userService.updateUser(user);
     }
 
+    @DeleteMapping
+    public int deleteUser(@RequestBody int userId) {
+        return userService.deleteUser(userId);
+    }
+
     @GetMapping("/{userId}")
     public User getUserById(@PathVariable int userId) {
         return userService.getUserById(userId);
     }
 
     @PutMapping("/{userId}/friends/{friendId}")
-    public User addFriend(@PathVariable("userId") int userId, @PathVariable("friendId") int friendId) {
-        return userService.addFriend(userId, friendId);
+    public void addFriend(@PathVariable("userId") int userId, @PathVariable("friendId") int friendId) {
+        userService.addFriend(userId, friendId);
     }
 
     @DeleteMapping("/{userId}/friends/{friendId}")
-    public User deleteFriend(@PathVariable("userId") int userId, @PathVariable("friendId") int friendId) {
-        return userService.deleteFriend(userId, friendId);
+    public void deleteFriend(@PathVariable("userId") int userId, @PathVariable("friendId") int friendId) {
+        userService.deleteFriend(userId, friendId);
     }
 
     @GetMapping("/{userId}/friends")
